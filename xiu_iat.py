@@ -1,3 +1,5 @@
+import math
+
 class OneStringToList:
     def __init__(self):
         pass
@@ -22,17 +24,6 @@ class OneStringToList:
     CATEGORY = "Xiu"
     DESCRIPTION = "将一个使用英文逗号分隔的string转换为list"
 
-    # list = []
-    # string_tuple = string.split(",")
-    # def convert(self, string):
-    #     for i in range(0, len(string.))
-    #     return (list,)
-    # def convert(self, string:str, string_symbol) -> list:
-    #     print(string.split(string_symbol))
-    #     try:
-    #         return string.split(string_symbol)
-    #     except:
-    #         return None
     def convert(self, string:str, string_symbol):
         list = []
         for i in range(0, len(string.split(string_symbol))):
@@ -56,7 +47,7 @@ class GetStringFromList:
                     "max": 1000, #Maximum value
                     "step": 1, #Slider's step
                     "display": "number", # Cosmetic only: display as "number" or "slider"
-                    "lazy": True # Will only be evaluated if check_lazy_status requires it
+                    # "lazy": True # Will only be evaluated if check_lazy_status requires it
                 }),
             },
         }
@@ -69,13 +60,107 @@ class GetStringFromList:
     DESCRIPTION = "使用索引提取列表中的元素"
 
     def main(self, list, index):
-        print(type(list))
-        print(type(index))
-        print(list)
-        print(index)
+        # print(type(list))
+        # print(type(index))
+        # print(list)
+        # print(index)
         output = list[index]
-        print(output)
+        # print(output)
         return (output,)
+
+class GetIntFromList:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required": {
+                "list": ('LIST', {"forceInput": True}),
+                "index": ("INT", {
+                    "default": 0, 
+                    "min": -1000, #Minimum value
+                    "max": 1000, #Maximum value
+                    "step": 1, #Slider's step
+                    "display": "number", # Cosmetic only: display as "number" or "slider"
+                }),
+            },
+        }
+
+    RETURN_TYPES = ("INT",)
+
+    FUNCTION = "main"
+
+    CATEGORY = "Xiu/List"
+    DESCRIPTION = "使用索引提取列表中的元素, 并尝试将字符串转换为INT"
+
+    def main(self, list, index):
+        output = list[index]
+        if isinstance(output, str):
+            if output.isdigit():
+                output = int(output)
+                print("success to tran input from str to int")
+        else:
+            print("file to tran input from str to int")
+        return (output,)
+    
+class BagelResizeImageSize:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required": {
+                "width": ('INT', {"forceInput": True}),
+                "height": ('INT', {"forceInput": True}),
+            },
+        }
+
+    RETURN_TYPES = ("INT","INT")
+    RETURN_NAMES = ("width","height")
+
+    FUNCTION = "resize_with_constraints"
+
+    CATEGORY = "Xiu/Size"
+    DESCRIPTION = "根据长短边及最大像素限制调整图片尺寸"
+
+    def resize_with_constraints(
+        self,
+        width: int,
+        height: int,
+        max_size: int = 1024,
+        min_size: int = 512,
+        stride: int = 16,
+        max_pixels: int = 14 * 14 * 9 * 1024,
+    ):
+        # 原始宽高
+        # orig_w, orig_h = width, height
+
+        # 先计算缩放比例，使长边不超过 max_size，短边不小于 min_size
+        scale_w = max_size / width
+        scale_h = max_size / height
+        scale_max = min(scale_w, scale_h)
+
+        scale_w = min_size / width
+        scale_h = min_size / height
+        scale_min = max(scale_w, scale_h)
+
+        scale = max(scale_min, min(scale_max, 1.0))  # 避免无限放大或缩小
+
+        new_w = int(round(width * scale))
+        new_h = int(round(height * scale))
+
+        # 对齐到 stride
+        new_w = int(math.floor(new_w / stride)) * stride
+        new_h = int(math.floor(new_h / stride)) * stride
+
+        # 检查最大像素限制
+        while new_w * new_h > max_pixels:
+            new_w = new_w - stride
+            new_h = new_h - stride
+
+        return (new_w, new_h,)
 
 class Example:
     """
@@ -227,10 +312,14 @@ class Example:
 NODE_CLASS_MAPPINGS = {
     # "OneStringToList": OneStringToList,
     "GetStringFromList": GetStringFromList,
+    "GetIntFromList": GetIntFromList,
+    "BagelResizeImageSize": BagelResizeImageSize,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
     # "OneStringToList": "OneStringToList Node",
     "GetStringFromList": "GetStringFromList Node",
+    "GetIntFromList": "GetIntFromList Node",
+    "BagelResizeImageSize": "BagelResizeImageSize Node",
 }
